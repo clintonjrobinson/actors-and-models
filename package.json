@@ -1,0 +1,29 @@
+{
+  "name": "actors-and-models",
+  "version": "0.1.0",
+  "description": "An ES6, yieldable ORM with integrated multi-role user security model.  Made with Koa in mind.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:clintonjrobinson/actors-and-models.git"
+  },
+  "keywords": [
+    "Koa",
+    "ORM",
+    "API",
+    "ES6"
+  ],
+  "author": "Clinton J. Robinson",
+  "license": "Apache 2.0",
+  "bugs": {
+    "url": "https://github.com/clintonjrobinson/actors-and-models/issues"
+  },
+  "homepage": "https://github.com/clintonjrobinson/actors-and-models",
+  "dependencies": {
+    "mongodb": "^2.0.14",
+    "object-assign": "^2.0.0"
+  }
+}
