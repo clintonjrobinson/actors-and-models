@@ -10,6 +10,39 @@ var mongo;
 class Document extends Common {
 
   /**
+   * Heavy Updates means that to perform an update, we must grab the whole document from the database.
+   * We need to do this because there is business validation defined for it that requires looking at the whole document
+   *
+   * Heavy Updates will be required IF the model has object level validation defined or if a function has been supplied
+   * as a property level validator.
+   * @returns {*}
+   */
+  static requiresHeavyUpdate() {
+    //Cache this setting since it may require a bit of time to generate.
+    if (this._requiresHeavyUpdate === undefined) {
+      //Right off the bat, if we have object level validation, this model requires a heavy Updates
+      if (this.validation) {
+        this._requiresHeavyUpdate = true;
+        return true;
+      }
+
+      for (var property in this.definition.properties) {
+        for (var validator in this.definition.properties.validators) {
+          //TODO: should we check for a string here instead?
+          if (this.definition.properties.validators[validator].constructor === Function) {
+            this._requiresHeavyUpdate = true;
+            return true;
+          }
+        }
+      }
+
+      this._requiresHeavyUpdate = false;
+    }
+
+    return this._requiresHeavyUpdate;
+  }
+
+  /**
    * Get one document by id.
    *
    * @param context
@@ -42,6 +75,12 @@ class Document extends Common {
     });
   }
 
+  /**
+   * Remove a document from the database
+   * @param context
+   * @param doc
+   * @returns {Promise}
+   */
   static remove (context, doc) {
     var self = this;
 
@@ -79,10 +118,17 @@ class Document extends Common {
     });
   }
 
+  /**
+   * Update one document in the database and return the updated doc
+   * @param context
+   * @param doc
+   * @returns {Promise}
+   */
   static update (context, doc) {
     var self = this;
+
     //Apply security rules.
-    this.secureUpdate(context, doc);
+    self.secureUpdate(context, doc);
 
     //TODO: run before validate middleware?
     //yield this.middleware.validate;
@@ -109,7 +155,7 @@ class Document extends Common {
   }
 
   /**
-   *
+   * Create a new document in the database
    * @param context
    * @param doc
    * @returns {Promise}
@@ -117,9 +163,36 @@ class Document extends Common {
   static create (context, doc) {
     var self = this;
 
-    return new Promise(function(resolve, reject) {
+    //TODO: before create
 
+    //Secure the doc based on the user role
+    self.secureCreate(context, doc);
+
+    //TODO: Validate
+
+    return new Promise(function(resolve, reject) {
+      function wrap(doc) {
+        resolve(new self(doc));
+      }
+
+      self.hasAccess(context, 'create')
+        ? mongo.insert(self.collectionName, doc).then(wrap).catch(reject)
+        : reject(new Error('Not Authorized'))
+      ;
     });
+  }
+
+  /**
+   * Count docs based on query
+   * @param context
+   * @param query
+   * @returns {*}
+   */
+  static count (context, query) {
+    return self.access(context, 'read')
+      ? mongo.count(self.collectionname, query)
+      : Promise.reject(new Error('Not Authorized'))
+    ;
   }
 
   /**

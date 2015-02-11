@@ -25,8 +25,11 @@ Models.api = function() {
       var model = call[0];
 
       switch (call[1]) {
+        case 'count':
+          this.body = yield Document.models[model].count(this, this.request.body)
+          break;
         case 'find':
-          this.body = yield Document.models[model].find(this, {});
+          this.body = yield Document.models[model].find(this, this.request.body);
           break;
         default: {
           let id = call[1];

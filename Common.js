@@ -7,6 +7,36 @@ if (!Object.assign) {
   Object.assign = require('object-assign');
 }
 
+var Validators = {
+  Required: function(value, condition) {
+    'this.dicks === false';
+    if (value === undefined || value === null || value === '' || isNaN(value) || value === Infinity) {
+      return false;
+    }
+
+    return true;
+  },
+  RegEx: function(value, regex) {
+    return regex.test(value);
+  },
+  Min: function (value, min) {
+    return value >= min;
+  },
+  Max: function (value, max) {
+    return value <= max;
+  },
+  MinLength: function(value, len) {
+    return value.length >= len;
+  },
+  MaxLength: function(value, len) {
+    return value.length <= len;
+  }
+}
+
+function validation(current, updates, final) {
+
+}
+
 class Common {
   constructor (properties) {
     this.__data = {};
@@ -47,6 +77,73 @@ class Common {
     //TODO: track changes to create a delta when saving, updating etc.
 
     this.__data[name] = property.cast(value);
+  }
+
+  validate () {
+    return this.constructor.validate(this);
+  }
+
+  /**
+   * Rules for validation:
+   * Property level Validators must be syncronous and return a true/false
+   *
+   * If object level validation is enabled, the doc will be pulled from the database.
+   * If object level validation is not enabled, the doc will not be pulled from the database
+   * If any property has propertylevel function validator, the doc will be pulled from the database.
+   *
+   * There are two modes of validation, updating and creating.
+   *
+   * Updates may not have the full information required to perform validation (ie, we are only updating
+   * Object level validation should have the ability to require a full object retrival before updating.  This comes at a cost.
+   *
+   * If "complex" validation is required, multi-updates must be prohibited.  Meaning, if we require the full
+   * object form the database to perform a validation.  The user is not allowed to try to update many records at once
+   */
+
+  static validateProperty(doc, property, method) {
+    //Early exit, no validators? Then this field is valid.
+    if (!property.validators) {
+      return true;
+    }
+
+    var result = {};
+
+    //Required is a special valdiator.
+    //If a field is not required, it can be null and therefore passes validation, since a null is valid.
+    //Also, if the method is an Update, a field is not required for updates.  Since we could be patching a field
+    if (property.validators.Required) {
+
+    }
+
+    for (var validator in property.validators) {
+      //The validation is false, until otherwise true.
+      result[validator] = false;
+
+    }
+
+    property
+  }
+
+  static validate(doc) {
+    var model = this;
+    var validation = {
+      valid: false,
+      results: {
+
+      }
+    };
+
+    return new Promise(function(reject, resolve) {
+
+      var valid = false;
+
+      //Iterate thru all the properties definitions and look for validators.
+      for (let name in this.definition.properties) {
+        let property = this.definition.properties[name];
+
+        valid = model.validateProperty(doc, property);
+      }
+    });
   }
 
   /**
