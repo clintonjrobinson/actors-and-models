@@ -29,12 +29,14 @@ Models.setMongoConnection = function(_mongo) {
     yield ensureAnonymousUser;
     yield ensureAdministratorUser;
   }).catch(function (e) {
+    console.error(e);
+    console.error(e.data);
     console.error(e.stack);
   });
 };
 
 function *ensureSystemUser() {
-  var User = Document.models['User'];
+  var User = Document.models.User;
 
   Models.systemUser = yield mongo.findOne(User.collectionName, {login:'system'});
 
@@ -52,7 +54,13 @@ function *ensureSystemUser() {
     Models.systemUser = new User(systemUser);
   }
 
-  global.systemContext = {session:{user:Models.systemUser}};
+  global.systemContext = {
+    session: {user: Models.systemUser},
+    user: Models.systemUser,
+    userId: Models.systemUser._id,
+    roles: ['System'],
+    isSystemContext: true
+  };
 }
 
 function *ensureAnonymousUser() {
@@ -62,12 +70,16 @@ function *ensureAnonymousUser() {
     Models.anonymousUser = yield User.get(global.systemContext, {login:'anonymous'});
   } catch (e) {
     console.log('- Actors & Models - no anonymous user found.  Creating one.');
-    Models.anonymousUser = yield User.create(global.systemContext, new User({
-      login: 'anonymous',
-      name: 'Anonymous',
-      password: utils.guid(32),
-      roles: ['Anonymous']
-    }));
+    Models.anonymousUser = yield User.create(
+      global.systemContext,
+      new User({
+        login: 'anonymous',
+        name: 'Anonymous',
+        password: utils.guid(32),
+        roles: ['Anonymous']
+      }),
+      {overrideValidation: true}
+    );
   }
 
   global.anonymousContext = {session:{user:Models.anonymousUser}};
@@ -104,6 +116,11 @@ Models.api = function() {
         throw new Error(`API call must be POST, you sent ${this.method}`);
       }
     }
+
+    //First get setup some user helpers in the context
+    this.user = (this.session && this.session.user) ? this.session.user : null;
+    this.userId = this.user ? this.user._id : null;
+    this.roles = (this.user && this.user.roles) ? this.user.roles : ['Anonymous'];
 
     if (/\/api\/v1\//.test(this.path)) {
       var call = this.path.replace('/api/v1/', '').split('/');
@@ -165,7 +182,9 @@ Models.api = function() {
 
 Models.Types = Types;
 Models.structure = Structure.registerDefinition;
+Models.structures = Structure.structures;
 Models.model = Document.registerDefinition;
+Models.models = Document.models;
 Models.utils = utils;
 
 Models.model(userDefinition);

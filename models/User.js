@@ -12,23 +12,16 @@ exports.User = {
         this.password = require('../lib/utils').hashPassword(this.password);
       }
     },
-    afterSave: function *() {
-      this.password = undefined;
-    },
     afterCreate: function *() {
+      var User = this.constructor;
+      User.mongo.findAndModify(User.collectionName, {_id: this._id}, {$set:{_owner: this._id}});
       //A user is its own owner. Mindbomb.
       this._owner = this._id;
-      this.password = undefined;
-
-      yield this.save(global.systemContext);
     }
   },
   properties: {
     _owner: {
-      type: ObjectID,
-      validators: {
-        Required: true
-      }
+      type: ObjectID
     },
     login: {
       type: String,
@@ -41,7 +34,6 @@ exports.User = {
       }
     },
     password: {
-      name: 'Password',
       type: String,
       validators: {
         Required: true,
@@ -121,7 +113,7 @@ exports.User = {
         read: ['System'],
         update: ['System']
       }
-    },
+    }
   },
   secure: {
     create: ['System', 'Admin'],
