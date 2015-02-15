@@ -77,16 +77,16 @@ function *ensureAdministratorUser() {
   var User = Document.models['User'];
 
   try {
-    let administrator = yield User.get(global.systemContext, {login:'administrator'});
+    let administrator = yield User.get(global.systemContext, {login:'admin'});
   } catch (e) {
     let password = utils.guid(32);
 
     console.log('- Actors & Models - no administrator user found.  Creating one with password: ' + password);
     yield User.create(global.systemContext, {
-      login: 'administrator',
+      login: 'admin',
       name: 'System Administrator',
       password: password,
-      roles: ['Administrator']
+      roles: ['Admin']
     });
   }
 

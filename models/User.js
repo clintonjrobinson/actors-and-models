@@ -8,12 +8,19 @@ exports.User = {
   middleware: {
     beforeSave: function *() {
       //Hash that password!
-      this.password = require('../lib/utils').hashPassword(this.password);
+      if (this.password) {
+        this.password = require('../lib/utils').hashPassword(this.password);
+      }
+    },
+    afterSave: function *() {
+      this.password = undefined;
     },
     afterCreate: function *() {
       //A user is its own owner. Mindbomb.
       this._owner = this._id;
-      this.save(global.systemContext);
+      this.password = undefined;
+
+      yield this.save(global.systemContext);
     }
   },
   properties: {
