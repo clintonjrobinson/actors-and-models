@@ -180,6 +180,8 @@ Models.api = function() {
   }
 };
 
+Models.Document = Document;
+Models.Structure = Structure;
 Models.Types = Types;
 Models.structure = Structure.registerDefinition;
 Models.structures = Structure.structures;
