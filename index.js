@@ -66,7 +66,7 @@ Models.api = function() {
             this.body = `var user = ${JSON.stringify(this.user)};`;
             break;
           }
-          this.body = this.user;
+          this.body = {user:this.user};
           break;
         default:
         {
