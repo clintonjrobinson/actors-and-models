@@ -57,61 +57,71 @@ Models.api = function() {
 
       switch (call[0]) {
         case 'models.js':
+          this.type = 'application/javascript';
           this.body = Models.clientJS();
           break;
-      }
-      if (call[0] === 'models.js') {
-      }
-
-      var model = Document.models[call[0]];
-      var query = (this.request.body && this.request.body.query) || {};
-      var options = (this.request.body && this.request.body.options) || {};
-
-      switch (call[1]) {
-        case 'count':
-          this.body = yield model.count(this, query, options);
-          break;
-
-        case 'find':
-          this.body = yield model.find(this, query, options);
-          break;
-
-        case 'create':
-          enforcePost.call(this);
-          var obj = yield model.create(this, this.request.body);
-          this.body = model.secureByAction(this, obj, 'read');
-          break;
-
-        default: {
-          let id = call[1];
-          let action = call[2];
-
-          if (!id) {
-            throw new Error('No ID provided');
+        case 'me':
+          if (this.query.format === 'jsonp') {
+            this.type = 'application/javascript';
+            this.body = `var user = ${JSON.stringify(this.user)};`;
+            break;
           }
+          this.body = this.user;
+          break;
+        default:
+        {
+          let model = Document.models[call[0]];
+          let query = (this.request.body && this.request.body.query) || {};
+          let options = (this.request.body && this.request.body.options) || {};
 
-          try {
-            id = new ObjectID(id);
-          } catch(e) {
-            throw new Error('Invalid ID supplied : ' + id);
-          }
-
-          switch (action) {
-            case 'get':
-              this.body = yield model.get(this, id);
+          switch (call[1]) {
+            case 'count':
+              this.body = yield model.count(this, query, options);
               break;
 
-            case 'remove':
-              this.body = yield model.remove(this, id);
+            case 'find':
+              this.body = yield model.find(this, query, options);
               break;
 
-            case 'update':
+            case 'create':
               enforcePost.call(this);
-              this.body = yield model.update(this, id, this.request.body);
+              var obj = yield model.create(this, this.request.body);
+              this.body = model.secureByAction(this, obj, 'read');
               break;
 
             default:
-              throw new Error('Unrecognized command: ' + action);
+            {
+              let id = call[1];
+              let action = call[2];
+
+              if (!id) {
+                throw new Error('No ID provided');
+              }
+
+              try {
+                id = new ObjectID(id);
+              } catch (e) {
+                throw new Error('Invalid ID supplied : ' + id);
+              }
+
+              switch (action) {
+                case 'get':
+                  this.body = yield model.get(this, id);
+                  break;
+
+                case 'remove':
+                  this.body = yield model.remove(this, id);
+                  break;
+
+                case 'update':
+                  enforcePost.call(this);
+                  this.body = yield model.update(this, id, this.request.body);
+                  break;
+
+                default:
+                  throw new Error('Unrecognized command: ' + action);
+              }
+            }
           }
         }
       }
