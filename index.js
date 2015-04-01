@@ -1,6 +1,7 @@
 "use strict";
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+const PROPERTY_API_IDENTIFIER = 'self.';
 
 var ObjectID = require('mongodb').ObjectID;
 var babel = require('babel');
@@ -93,6 +94,7 @@ Models.api = function() {
             {
               let id = call[1];
               let action = call[2];
+              let subAction = call[3];
 
               if (!id) {
                 throw new Error('No ID provided');
@@ -119,6 +121,33 @@ Models.api = function() {
                   break;
 
                 default:
+                  //If this model has a special property defined, there may be an api call hurr
+                  //Look for self.
+                  if (action.indexOf(PROPERTY_API_IDENTIFIER) === 0) {
+                    //The action will be passed in like this 'self.profile.image'
+                    //So we will split up the command and find the property it may be referring to
+                    var properties = action.split('.');
+                    properties.shift();
+
+                    let property = model;
+
+                    for (let name of properties) {
+
+                      if (property && property.definition.properties[name]) {
+                        property = property.definition.properties[name]._type;
+                      } else {
+                        throw new Error('Unrecognized command: ' + action);
+                      }
+                    }
+
+                    //This property type has a defined API
+                    if (property && property.hasApi) {
+                      //Throw a security check
+                      this.body = yield property.api.call(this, {id:id, model:model, property:action, action:subAction});
+                      return;
+                    }
+                  }
+
                   throw new Error('Unrecognized command: ' + action);
               }
             }
@@ -151,7 +180,8 @@ Models.clientJS = function() {
 
     str += `var Types = {
       MiniGuid: ${Types.MiniGuid},
-      Guid: ${Types.Guid}
+      Guid: ${Types.Guid},
+      Image: ${Types.Image}
     };\n`;
 
     str += 'var Models = window.Models = {};\n';
