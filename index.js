@@ -2,6 +2,7 @@
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const PROPERTY_API_IDENTIFIER = 'self.';
+const API_PREFIX = '/api/v1/';
 
 var ObjectID = require('mongodb').ObjectID;
 var babel = require('babel');
@@ -19,11 +20,22 @@ var utils = require('./lib/utils');
 
 var userDefinition = require('./models/User').User;
 
+var opts;
+
 exports = module.exports = Models;
 
-function Models(model) {
-  return Document.models[model];
+function Models() {
 }
+
+Models.setOptions = function(_opts) {
+  opts = _opts || {};
+
+  opts.root = opts.root || __dirname;
+
+  if (opts.mongo) {
+    Models.setMongoConnection(opts.mongo);
+  }
+};
 
 //TODO: Probably a better way to do this.
 Models.setMongoConnection = function(mongo) {
@@ -42,11 +54,12 @@ Models.registerValidator = function() {
 
 Models.api = function() {
   return function *(next) {
-    function enforcePost() {
+
+    this.enforcePost = function() {
       if (this.method !== 'POST') {
         throw new Error(`API call must be POST, you sent ${this.method}`);
       }
-    }
+    };
 
     //First get setup some user helpers in the context
     this.user = (this.session && this.session.user) ? this.session.user : null;
@@ -54,7 +67,7 @@ Models.api = function() {
     this.roles = (this.user && this.user.roles) ? this.user.roles : ['Anonymous'];
 
     if (/\/api\/v1\//.test(this.path)) {
-      var call = this.path.replace('/api/v1/', '').split('/');
+      var call = this.path.replace(API_PREFIX, '').split('/');
 
       switch (call[0]) {
         case 'models.js':
@@ -85,7 +98,7 @@ Models.api = function() {
               break;
 
             case 'create':
-              enforcePost.call(this);
+              this.enforcePost();
               var obj = yield model.create(this, this.request.body);
               this.body = model.secureByAction(this, obj, 'read');
               break;
@@ -116,7 +129,7 @@ Models.api = function() {
                   break;
 
                 case 'update':
-                  enforcePost.call(this);
+                  this.enforcePost();
                   this.body = yield model.update(this, id, this.request.body);
                   break;
 
@@ -129,21 +142,23 @@ Models.api = function() {
                     var properties = action.split('.');
                     properties.shift();
 
-                    let property = model;
+                    let type = model;
+                    let property;
 
                     for (let name of properties) {
 
-                      if (property && property.definition.properties[name]) {
-                        property = property.definition.properties[name]._type;
+                      if (type && type.definition.properties[name]) {
+                        property = type.definition.properties[name];
+                        type = property._type;
                       } else {
                         throw new Error('Unrecognized command: ' + action);
                       }
                     }
 
                     //This property type has a defined API
-                    if (property && property.hasApi) {
-                      //Throw a security check
-                      this.body = yield property.api.call(this, {id:id, model:model, property:action, action:subAction});
+                    if (type && type.api && type.api[subAction]) {
+                      //TODO: Roll a security check?
+                      yield type.api[subAction].call(this, {id:id, model:model, propertyName: action.replace(PROPERTY_API_IDENTIFIER, ''), property:property, opts: opts});
                       return;
                     }
                   }
@@ -178,13 +193,14 @@ Models.clientJS = function() {
     }
     str += '};\n';
 
-    str += `var Types = {
-      MiniGuid: ${Types.MiniGuid},
-      Guid: ${Types.Guid},
-      Image: ${Types.Image}
-    };\n`;
-
     str += 'var Models = window.Models = {};\n';
+
+    str += 'var Types = Models.Types = {';
+    for (var type in Types) {
+      str += `${type}: ${Types[type]},`;
+    }
+    str += '};\n';
+
     str += Models.Property.toString();
     str += `Models.Property = Property;\n`;
     str += Models.Common.toString();
