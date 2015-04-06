@@ -23,12 +23,12 @@
   },
   "homepage": "https://github.com/clintonjrobinson/actors-and-models",
   "dependencies": {
-    "babel": "^4.1.1",
-    "co": "^4.3.1",
+    "babel": "^5.0.0",
+    "co": "^4.5.1",
     "koa-compose": "^2.3.0",
     "koa-send": "*",
-    "mongodb": "^2.0.14",
+    "mongodb": "^2.0.25",
     "object-assign": "^2.0.0",
-    "uglify-js": "^2.4.16"
+    "uglify-js": "^2.4.19"
   }
 }
