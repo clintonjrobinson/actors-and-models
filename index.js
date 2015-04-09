@@ -14,6 +14,7 @@ var Document = require('./lib/Document');
 var Structure = require('./lib/Structure');
 var Property = require('./lib/Property');
 var Validators = require('./lib/validators').Validators;
+var errors = require('./lib/errors');
 
 var Types = require('./lib/Types');
 var utils = require('./lib/utils');
@@ -70,6 +71,23 @@ Models.api = function() {
       var call = this.path.replace(API_PREFIX, '').split('/');
 
       switch (call[0]) {
+        case 'login':
+        {
+          let vars = {
+            login: this.request.body.fields.login,
+            password: Models.utils.hashPassword(this.request.body.fields.password)
+          };
+
+          let user = yield Models.models.User.get(global.systemContext, vars);
+
+          this.session.user = user;
+          this.body = Models.models.User.secureByAction(this, user, 'read');
+          break;
+        }
+        case 'logout':
+          this.session.user = null;
+          this.body = {success:true};
+          break;
         case 'models.js':
           this.type = 'application/javascript';
           this.body = Models.clientJS();
@@ -85,8 +103,8 @@ Models.api = function() {
         default:
         {
           let model = Document.models[call[0]];
-          let query = (this.request.body && this.request.body.query) || {};
-          let options = (this.request.body && this.request.body.options) || {};
+          let query = (this.request.body && this.request.body.fields && this.request.body.query) || {};
+          let options = (this.request.body && this.request.body.fields && this.request.body.options) || {};
 
           switch (call[1]) {
             case 'count':
@@ -99,7 +117,7 @@ Models.api = function() {
 
             case 'create':
               this.enforcePost();
-              var obj = yield model.create(this, this.request.body);
+              var obj = yield model.create(this, this.request.body.fields);
               this.body = model.secureByAction(this, obj, 'read');
               break;
 
@@ -130,7 +148,7 @@ Models.api = function() {
 
                 case 'update':
                   this.enforcePost();
-                  this.body = yield model.update(this, id, this.request.body);
+                  this.body = yield model.update(this, id, this.request.body.fields);
                   break;
 
                 default:
@@ -186,6 +204,12 @@ Models.clientJS = function() {
       RESERVED_WORDS: ${JSON.stringify(utils.RESERVED_WORDS)},
       RESERVED_ROLES: ${JSON.stringify(utils.RESERVED_ROLES)}
     };\n`;
+
+    str += 'var errors = {';
+    for (var error in errors) {
+      str += `${error}: ${errors[error]},`;
+    }
+    str += '};\n';
 
     str += 'var Validators = {';
     for (var validator in Validators) {

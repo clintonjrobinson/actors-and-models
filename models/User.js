@@ -23,6 +23,13 @@ exports.User = {
     _owner: {
       type: ObjectID
     },
+    groups: {
+      type: ObjectID,
+      array: true,
+      validators: {
+        MaxLength: 32
+      }
+    },
     login: {
       type: String,
       validators: {
