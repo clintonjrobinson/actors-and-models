@@ -12,6 +12,7 @@ var uglify = require('uglify-js');
 var Common = require('./lib/Common');
 var Document = require('./lib/Document');
 var Structure = require('./lib/Structure');
+var Projection = require('./lib/Projection');
 var Property = require('./lib/Property');
 var Validators = require('./lib/validators').Validators;
 var errors = require('./lib/errors');
@@ -100,6 +101,20 @@ Models.api = function() {
           }
           this.body = {user:this.user};
           break;
+
+        case 'projection':  {
+          let projection = Projection.projections[call[1]];
+
+          if (!projection) {
+            throw new Error('Invalid Projection.');
+          }
+
+          let query = (this.request.body && this.request.body.fields && this.request.body.query) || {};
+          let options = (this.request.body && this.request.body.fields && this.request.body.options) || {};
+
+          this.body = yield projection.fetch(this, query, options);
+          break;
+        }
         default:
         {
           let model = Document.models[call[0]];
@@ -264,11 +279,18 @@ Models.Property = Property;
 Models.Common = Common;
 Models.Document = Document;
 Models.Structure = Structure;
+Models.Projection = Projection;
 Models.Types = Types;
+
 Models.structure = Structure.registerDefinition;
 Models.structures = Structure.structures;
+
 Models.model = Document.registerDefinition;
 Models.models = Document.models;
+
+Models.projection = Projection.registerDefinition;
+Models.projections = Projection.projections;
+
 Models.utils = utils;
 
 Models.model(userDefinition);
