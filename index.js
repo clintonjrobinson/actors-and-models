@@ -109,10 +109,8 @@ Models.api = function() {
             throw new Error('Invalid Projection.');
           }
 
-          let query = (this.request.body && this.request.body.fields && this.request.body.query) || {};
-          let options = (this.request.body && this.request.body.fields && this.request.body.options) || {};
-
-          this.body = yield projection.fetch(this, query, options);
+          let query = (this.request.body && this.request.body.fields) || {};
+          this.body = yield projection.fetch(this, query);
           break;
         }
         default:
@@ -120,6 +118,7 @@ Models.api = function() {
           let model = Document.models[call[0]];
           let query = (this.request.body && this.request.body.fields && this.request.body.query) || {};
           let options = (this.request.body && this.request.body.fields && this.request.body.options) || {};
+          let obj = (this.request.body && this.request.body.fields) || {};
 
           switch (call[1]) {
             case 'count':
@@ -131,10 +130,12 @@ Models.api = function() {
               break;
 
             case 'create':
+            {
               this.enforcePost();
-              var obj = yield model.create(this, this.request.body.fields);
-              this.body = model.secureByAction(this, obj, 'read');
+              let ret = yield model.create(this, obj);
+              this.body = model.secureByAction(this, ret, 'read');
               break;
+            }
 
             default:
             {
@@ -163,7 +164,8 @@ Models.api = function() {
 
                 case 'update':
                   this.enforcePost();
-                  this.body = yield model.update(this, id, this.request.body.fields);
+                  obj._id = id;
+                  this.body = yield model.update(this, obj);
                   break;
 
                 default:
