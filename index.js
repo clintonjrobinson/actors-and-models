@@ -162,7 +162,7 @@ Models.api = function() {
                 case 'update':
                   this.enforcePost();
                   obj._id = id;
-                  this.body = yield model.update(this, obj);
+                  this.body = yield model.update(this, obj, {fromClient: true});
                   break;
 
                 default:
