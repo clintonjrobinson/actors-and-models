@@ -1,9 +1,5 @@
 "use strict";
 
-const IS_PRODUCTION = process.env.NODE_ENV === 'production';
-const PROPERTY_API_IDENTIFIER = 'self.';
-const API_PREFIX = '/api/v1/';
-
 var ObjectID = require('mongodb').ObjectID;
 var babel = require('babel');
 var fs = require('fs');
@@ -16,6 +12,7 @@ var Projection = require('./lib/Projection');
 var Property = require('./lib/Property');
 var Validators = require('./lib/validators').Validators;
 var errors = require('./lib/errors');
+var CONSTANTS = require('./lib/constants');
 
 var Types = require('./lib/Types');
 var utils = require('./lib/utils');
@@ -69,7 +66,7 @@ Models.api = function() {
     this.roles = (this.user && this.user.roles) ? this.user.roles : ['Anonymous'];
 
     if (/\/api\/v1\//.test(this.path)) {
-      var call = this.path.replace(API_PREFIX, '').split('/');
+      var call = this.path.replace(CONSTANTS.API_PREFIX, '').split('/');
 
       switch (call[0]) {
         case 'login':
@@ -116,8 +113,8 @@ Models.api = function() {
         default:
         {
           let model = Document.models[call[0]];
-          let query = (this.request.body && this.request.body.fields && this.request.body.query) || {};
-          let options = (this.request.body && this.request.body.fields && this.request.body.options) || {};
+          let query = (this.request.body && this.request.body.fields && this.request.body.fields.query) || {};
+          let options = (this.request.body && this.request.body.fields && this.request.body.fields.options) || {};
           let obj = (this.request.body && this.request.body.fields) || {};
 
           switch (call[1]) {
@@ -155,7 +152,7 @@ Models.api = function() {
 
               switch (action) {
                 case 'get':
-                  this.body = yield model.get(this, id);
+                  this.body = yield model.get(this, id, options);
                   break;
 
                 case 'remove':
@@ -171,7 +168,7 @@ Models.api = function() {
                 default:
                   //If this model has a special property defined, there may be an api call hurr
                   //Look for self.
-                  if (action.indexOf(PROPERTY_API_IDENTIFIER) === 0) {
+                  if (action.indexOf(CONSTANTS.PROPERTY_API_IDENTIFIER) === 0) {
                     //The action will be passed in like this 'self.profile.image'
                     //So we will split up the command and find the property it may be referring to
                     var properties = action.split('.');
@@ -193,7 +190,7 @@ Models.api = function() {
                     //This property type has a defined API
                     if (type && type.api && type.api[subAction]) {
                       //TODO: Roll a security check?
-                      yield type.api[subAction].call(this, {id:id, model:model, propertyName: action.replace(PROPERTY_API_IDENTIFIER, ''), property:property, opts: opts});
+                      yield type.api[subAction].call(this, {id:id, model:model, propertyName: action.replace(CONSTANTS.PROPERTY_API_IDENTIFIER, ''), property:property, opts: opts});
                       return;
                     }
                   }
@@ -218,8 +215,8 @@ Models.clientJS = function() {
     str += `var utils = {
       union: ${utils.union},
       guid: ${utils.guid},
-      RESERVED_WORDS: ${JSON.stringify(utils.RESERVED_WORDS)},
-      RESERVED_ROLES: ${JSON.stringify(utils.RESERVED_ROLES)}
+      RESERVED_WORDS: ${JSON.stringify(CONSTANTS.RESERVED_WORDS)},
+      RESERVED_ROLES: ${JSON.stringify(CONSTANTS.RESERVED_ROLES)}
     };\n`;
 
     str += 'var errors = {';
@@ -269,7 +266,7 @@ Models.clientJS = function() {
 
     clientJS = babel.transform(str).code;
 
-    if (IS_PRODUCTION) {
+    if (CONSTANTS.IS_PRODUCTION) {
       clientJS = uglify.minify(clientJS, {fromString: true}).code;
     }
   }
