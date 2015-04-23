@@ -233,6 +233,7 @@ Models.clientJS = function() {
 
     str += 'var Models = window.Models = {};\n';
 
+    str += `Models.constants = ${JSON.stringify(Models.constants)};\n`;
     str += 'var Types = Models.Types = {';
     for (var type in Types) {
       str += `${type}: ${Types[type]},`;
@@ -246,9 +247,15 @@ Models.clientJS = function() {
     str += Models.Structure.toString();
     str += `Models.Structure = Structure;\n`;
     str += `Models.structures = {};\n`;
-    str += 'var Extend = Structure;';
+    str += 'var Extend;';
 
     for (let structure in Models.structures) {
+      if (Models.structures[structure].definition.extend) {
+        str += `Extend = Models.structures.${Models.structures[structure].definition.extend.name};`;
+      } else {
+        str += 'Extend = Structure;';
+      }
+
       str += Models.structures[structure].toString();
       str += `Models.structures.${structure} = ${structure};\n`;
       str += `Models.structures.${structure}._clientInit();`;
@@ -257,8 +264,14 @@ Models.clientJS = function() {
     str += Models.Document.toString();
     str += `Models.Document = Document;\n`;
     str += `Models.models = {};\n`;
-    str += 'Extend = Document;';
+
     for (let model in Models.models) {
+      if (Models.models[model].definition.extend) {
+        str += `Extend = Models.models.${Models.models[model].definition.extend.name};`;
+      } else {
+        str += 'Extend = Document;';
+      }
+
       str += Models.models[model].toString();
       str += `Models.models.${model} = ${model};\n`;
       str += `Models.models.${model}._clientInit();`;
