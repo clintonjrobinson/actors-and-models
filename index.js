@@ -179,8 +179,8 @@ Models.api = function() {
 
                     for (let name of properties) {
 
-                      if (type && type.definition.properties[name]) {
-                        property = type.definition.properties[name];
+                      if (type && type.def.properties[name]) {
+                        property = type.def.properties[name];
                         type = property._type;
                       } else {
                         throw new Error('Unrecognized command: ' + action);
@@ -250,8 +250,8 @@ Models.clientJS = function() {
     str += 'var Extend;';
 
     for (let structure in Models.structures) {
-      if (Models.structures[structure].definition.extend) {
-        str += `Extend = Models.structures.${Models.structures[structure].definition.extend.name};`;
+      if (Models.structures[structure].def.extend) {
+        str += `Extend = Models.structures.${Models.structures[structure].def.extend.name};`;
       } else {
         str += 'Extend = Structure;';
       }
@@ -266,8 +266,8 @@ Models.clientJS = function() {
     str += `Models.models = {};\n`;
 
     for (let model in Models.models) {
-      if (Models.models[model].definition.extend) {
-        str += `Extend = Models.models.${Models.models[model].definition.extend.name};`;
+      if (Models.models[model].def.extend) {
+        str += `Extend = Models.models.${Models.models[model].def.extend.name};`;
       } else {
         str += 'Extend = Document;';
       }
