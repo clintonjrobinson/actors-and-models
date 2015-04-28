@@ -258,7 +258,10 @@ Models.clientJS = function() {
 
       str += Models.structures[structure].toString();
       str += `Models.structures.${structure} = ${structure};\n`;
-      str += `Models.structures.${structure}._clientInit();`;
+      str += `Models.structures.${structure}._clientInit();\n`;
+      str += `Extend.children = Extend.children || {};\n`;
+      str += `Extend.children['${structure}'] = Models.structures.${structure};`;
+
     }
 
     str += Models.Document.toString();
@@ -275,6 +278,8 @@ Models.clientJS = function() {
       str += Models.models[model].toString();
       str += `Models.models.${model} = ${model};\n`;
       str += `Models.models.${model}._clientInit();`;
+      str += `Extend.children = Extend.children || {};\n`;
+      str += `Extend.children['${model}'] = Models.structures.${model};`;
     }
 
     clientJS = babel.transform(str).code;
