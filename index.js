@@ -63,6 +63,7 @@ Models.api = function() {
     //First get setup some user helpers in the context
     this.user = (this.session && this.session.user) ? this.session.user : null;
     this.userId = this.user ? this.user._id : null;
+    this.userGroups = this.user && this.user._groups ? this.user._groups : [];
     this.roles = (this.user && this.user.roles) ? this.user.roles : ['Anonymous'];
 
     if (/\/api\/v1\//.test(this.path)) {
@@ -123,6 +124,8 @@ Models.api = function() {
               break;
 
             case 'find':
+              options.json = true;
+
               this.body = yield model.find(this, query, options);
               break;
 

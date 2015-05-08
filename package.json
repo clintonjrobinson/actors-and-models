@@ -24,8 +24,6 @@
   "homepage": "https://github.com/clintonjrobinson/actors-and-models",
   "dependencies": {
     "babel": "^5.1.11",
-    "co": "^4.5.1",
-    "koa-compose": "^2.3.0",
     "koa-send": "*",
     "mongodb": "^2.0.25",
     "object-assign": "^2.0.0",

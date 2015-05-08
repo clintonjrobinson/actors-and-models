@@ -5,6 +5,7 @@ var ObjectID = require('mongodb').ObjectID;
 exports.User = {
   name: 'User',
   description: 'User model.',
+  ownerSecurity: true,
   middleware: {
     beforeSave: function *() {
       //Hash that password!
@@ -14,7 +15,7 @@ exports.User = {
     },
     afterCreate: function *() {
       var User = this.constructor;
-      User.mongo.findAndModify(User.collectionName, {_id: this._id}, {$set:{_owner: this._id}});
+      User.mongo.findOneAndUpdate(User.collectionName, {_id: this._id}, {$set:{_owner: this._id}});
       //A user is its own owner. Mindbomb.
       this._owner = this._id;
     }
@@ -27,7 +28,7 @@ exports.User = {
       type: ObjectID,
       array: true,
       validators: {
-        MaxLength: 32
+        MaxLength: 12
       }
     },
     login: {
