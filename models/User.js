@@ -2,7 +2,7 @@
 
 var ObjectID = require('mongodb').ObjectID;
 
-exports.User = {
+exports = module.exports = {
   name: 'User',
   description: 'User model.',
   ownerSecurity: true,
