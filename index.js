@@ -60,4 +60,6 @@ Models.Projection = require('./lib/models/Projection');
 Models.projection = Models.Projection.registerDefinition;
 Models.projections = Models.Projection.projections;
 
-Models.model(require('./models/User'));
+//Create the User model, it is the only one we will define cuz its important.
+require('./models/Group')(Models);
+require('./models/User')(Models);
