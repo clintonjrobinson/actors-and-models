@@ -1,4 +1,4 @@
-var Models = require('actors-and-models');
+"use strict";
 
 exports = module.exports = function(Models) {
   Models.structure({

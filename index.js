@@ -61,5 +61,4 @@ Models.projection = Models.Projection.registerDefinition;
 Models.projections = Models.Projection.projections;
 
 //Create the User model, it is the only one we will define cuz its important.
-require('./models/Group')(Models);
 require('./models/User')(Models);

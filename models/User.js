@@ -1,8 +1,9 @@
 "use strict";
 
-var ObjectID = require('mongodb').ObjectID;
-
 exports = module.exports = function(Models) {
+  require('./DeviceToken')(Models);
+  require('./Group')(Models);
+  require('./OAuth')(Models);
 
   return Models.model({
     name: 'User',
@@ -11,7 +12,9 @@ exports = module.exports = function(Models) {
     indexes: [
       {key: {emails:1}, name:'emails', unique:true, sparse:false},
       {key: {guid:1}, name:'guid', unique:true, sparse:true},
-      {key: {'groups.group.$id':1}, name:'groups', unique:false, sparse:true}
+      {key: {'groups.group':1}, name:'groups', unique:false, sparse:true},
+      {key: {'OAuth.id':1, 'OAuth.type': 1}, name:'ouath', unique:true, sparse:true},
+      {key: {'deviceTokens.token':1}, name:'deviceToken', unique:true, sparse:true}
     ],
     middleware: {
       beforeSave: function *() {
@@ -22,22 +25,14 @@ exports = module.exports = function(Models) {
       },
       afterCreate: function *() {
         var User = this.constructor;
-        User.mongo.findOneAndUpdate(User.collectionName, {_id: this._id}, {$set: {_owner: this._id}})
-          .then(function (doc) {
-            console.log('after create good?')
-          })
-          .catch(function(err) {
-            console.error('After create');
-            console.error(err);
-          })
-        ;
+        User.mongo.findOneAndUpdate(User.collectionName, {_id: this._id}, {$set: {_owner: this._id}});
         //A user is its own owner. Mindbomb.
         this._owner = this._id;
       }
     },
     properties: {
       _owner: {
-        type: ObjectID
+        type: Models.Types.ObjectID
       },
       groups: {
         type: Models.structures.Group,
@@ -54,6 +49,7 @@ exports = module.exports = function(Models) {
         type: String,
         array: true,
         validators: {
+          Required: true,
           Email: true,
           ArrayMaxLength: 5,
           ArrayMinLength: 1
