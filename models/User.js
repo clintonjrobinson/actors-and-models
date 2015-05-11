@@ -81,13 +81,6 @@ exports = module.exports = function(Models) {
           update: ['System']
         }
       },
-      source: {
-        type: String,
-        secure: {
-          read: ['System', 'Admin', 'Owner'],
-          update: ['System']
-        }
-      },
       status: {
         type: String,
         secure: {
@@ -131,11 +124,15 @@ exports = module.exports = function(Models) {
           update: ['System', 'Admin', 'Owner']
         }
       },
+      deviceTokens: {
+        type: Models.structures.DeviceToken,
+        array: true
+      },
       OAuth: {
-        type: Object,
+        type: Models.structures.OAuth,
         array: true,
         secure: {
-          read: ['System', 'Admin', 'Owner'],
+          read: ['System', 'Owner'],
           update: ['System']
         }
       }
