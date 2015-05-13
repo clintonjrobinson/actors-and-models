@@ -22,6 +22,13 @@ exports = module.exports = function(Models) {
         if (this.password) {
           this.password = require('../lib/utils').hashPassword(this.password);
         }
+
+        //Make sure all emails are lower case!
+        if (this.emails) {
+          for (var i=0; i<this.emails.length; i++) {
+            this.emails[i] = this.emails[i].toLowerCase();
+          }
+        }
       },
       afterCreate: function *() {
         var User = this.constructor;
@@ -41,7 +48,6 @@ exports = module.exports = function(Models) {
           ArrayMaxLength: 24
         },
         secure: {
-          read: ['System'],
           update: ['System']
         }
       },

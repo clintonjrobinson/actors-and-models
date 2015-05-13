@@ -15,7 +15,7 @@ function Models(config) {
   Models.config.root = path.resolve(__dirname, '../');
 
   ///Koa routes
-  Models.auth = require('./lib/auth');
+  Models.auth = require('./lib/auth')(Models);
 
   //Create the koa app
   Models.app = require('./lib/app')(Models);
