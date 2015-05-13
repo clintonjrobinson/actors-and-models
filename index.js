@@ -23,7 +23,8 @@ function Models(config) {
   //Setup Client side JS
   Models.clientJS = require('./lib/client')(Models);
 
-  Models.api = require('./lib/api')(Models);
+  Models.api = {};
+  require('./lib/api')(Models);
 
   return Models;
 }
