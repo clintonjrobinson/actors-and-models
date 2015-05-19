@@ -12,7 +12,7 @@ function Models(config) {
   Object.assign(Models.config, config['env:' + Models.constants.APP_ENV] || {});
 
   //Set the root path.  This will come in handy later for lots of functions.
-  Models.config.root = path.resolve(__dirname, '../');
+  Models.config.root = config.root || __dirname;
 
   ///Koa routes
   Models.auth = require('./lib/auth')(Models);
