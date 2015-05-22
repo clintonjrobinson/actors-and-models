@@ -32,9 +32,19 @@ exports = module.exports = function(Models) {
       },
       afterCreate: function *() {
         var User = this.constructor;
-        User.mongo.findOneAndUpdate(User.collectionName, {_id: this._id}, {$set: {_owner: this._id}});
         //A user is its own owner. Mindbomb.
+        //A user is its own Admin of its own group.
+        var group = new Models.structures.Group({group: this._id, roles: ['Admin']});
+
+        User.mongo.findOneAndUpdate(User.collectionName, {_id: this._id}, {$set: {_owner: this._id}, $push: {groups: group.toJSON()}});
+
         this._owner = this._id;
+
+        if (!this.groups) {
+          this.groups = [];
+        }
+
+        this.groups.push(group);
       }
     },
     properties: {
