@@ -17,9 +17,12 @@ exports = module.exports = function(Models) {
       {key: {'deviceTokens.token':1}, name:'deviceToken', unique:true, sparse:true}
     ],
     middleware: {
+      beforeCreate: function *() {
+        this.password = require('../lib/utils').hashPassword(this.password);
+      },
       beforeSave: function *() {
-        //Hash that password!
-        if (this.password) {
+        //Hash that password
+        if (this.hasChanged('password') && this.password) {
           this.password = require('../lib/utils').hashPassword(this.password);
         }
 
