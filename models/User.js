@@ -18,7 +18,8 @@ exports = module.exports = function(Models) {
     ],
     middleware: {
       beforeCreate: function *() {
-        this.password = require('../lib/utils').hashPassword(this.password);
+        //Set the password without triggering the change.
+        this.__data.password = require('../lib/utils').hashPassword(this.password);
       },
       beforeSave: function *() {
         //Hash that password
