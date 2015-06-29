@@ -4,13 +4,14 @@ exports = module.exports = function(Models) {
   require('./DeviceToken')(Models);
   require('./Group')(Models);
   require('./OAuth')(Models);
+  require('./UserLogin')(Models);
 
   return Models.model({
     name: 'User',
     description: 'User model.',
     ownerSecurity: true,
     indexes: [
-      {key: {emails:1}, name:'emails', unique:true, sparse:false},
+      {key: {'login.email':1}, name:'logins', unique:true, sparse:false},
       {key: {guid:1}, name:'guid', unique:true, sparse:true},
       {key: {'groups.group':1}, name:'groups', unique:false, sparse:true},
       {key: {'OAuth.id':1, 'OAuth.type': 1}, name:'ouath', unique:true, sparse:true},
@@ -28,9 +29,9 @@ exports = module.exports = function(Models) {
         }
 
         //Make sure all emails are lower case!
-        if (this.emails) {
-          for (var i=0; i<this.emails.length; i++) {
-            this.emails[i] = this.emails[i].toLowerCase();
+        if (this.login) {
+          for (var i=0; i<this.login.length; i++) {
+            this.login[i].email = this.login[i].email.toLowerCase();
           }
         }
       },
@@ -65,12 +66,11 @@ exports = module.exports = function(Models) {
           update: ['System']
         }
       },
-      emails: {
-        type: String,
+      login: {
+        type: Models.structures.UserLogin,
         array: true,
         validators: {
           Required: true,
-          Email: true,
           ArrayMaxLength: 5,
           ArrayMinLength: 1
         },
