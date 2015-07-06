@@ -1,6 +1,8 @@
 "use strict";
 
 var path = require('path');
+var cluster = require('cluster');
+var numCPUs = require('os').cpus().length;
 
 if (!Object.assign) {
   Object.assign = require('object-assign');
@@ -63,3 +65,26 @@ Models.projections = Models.Projection.projections;
 
 //Create the User model, it is the only one we will define cuz its important.
 require('./models/User')(Models);
+
+Models.listen = function() {
+  /**
+   * Only fork in the production environemnt.
+   */
+  if (cluster.isMaster && Models.config.cluster) {
+    // Fork workers.
+    console.log(`${Models.config.name} - master thread NODE_ENV:${Models.constants.NODE_ENV} APP_ENV:${Models.constants.APP_ENV}`);
+    for (var i = 0; i < numCPUs; i++) {
+      cluster.fork();
+    }
+
+    cluster.on('exit',
+      function (worker, code, signal) {
+        console.error('error: ' + new Date() + ' Worker ' + worker.pid + ' died');
+        cluster.fork();
+      }
+    );
+  } else {
+    Models.app.listen(Models.config.port);
+    console.log(`${Models.config.name}-${process.pid} listening on ${Models.config.domain}:${Models.config.port} NODE_ENV:${Models.constants.NODE_ENV} APP_ENV:${Models.constants.APP_ENV}`);
+  }
+};
