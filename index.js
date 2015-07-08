@@ -3,6 +3,7 @@
 var path = require('path');
 var cluster = require('cluster');
 var numCPUs = require('os').cpus().length;
+var Mongo = require('promises-of-mongo');
 
 if (!Object.assign) {
   Object.assign = require('object-assign');
@@ -20,13 +21,23 @@ function Models(config) {
   Models.auth = require('./lib/auth')(Models);
 
   //Create the koa app
+  Models.api = {};
   Models.app = require('./lib/app')(Models);
 
   //Setup Client side JS
   Models.clientJS = require('./lib/client')(Models);
 
-  Models.api = {};
   require('./lib/api')(Models);
+
+  Models.connections = {};
+  for (let connection in Models.config.mongos) {
+    Models.connections[connection] = new Mongo(Models.config.mongos[connection]);
+  }
+
+  Models.mongo = Models.connections.default;
+
+  //Ensure that all the required users have been created.
+  require('./lib/requiredUsers')(Models);
 
   return Models;
 }
@@ -37,15 +48,6 @@ Models.constants = require('./lib/constants');
 Models.utils = require('./lib/utils');
 Models.errors = require('./lib/errors');
 
-//TODO: Probably a better way to do this.
-Models.setMongoConnection = function(mongo) {
-  Models.mongo = mongo;
-  Models.Document.setMongoConnection(mongo);
-
-  //Ensure that all the required users have been created.
-  require('./lib/requiredUsers')(Models);
-};
-
 Models.Types = require('./lib/types');
 Models.Validators = require('./lib/validators');
 Models.Property = require('./lib/models/Property');
@@ -55,7 +57,7 @@ Models.Structure = require('./lib/models/Structure');
 Models.structure = Models.Structure.registerDefinition;
 Models.structures = Models.Structure.structures;
 
-Models.Document = require('./lib/models/Document');
+Models.Document = require('./lib/models/Document')(Models);
 Models.model = Models.Document.registerDefinition;
 Models.models = Models.Document.models;
 
