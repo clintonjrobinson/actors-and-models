@@ -10,6 +10,10 @@ exports = module.exports = function(Models) {
     name: 'User',
     description: 'User model.',
     ownerSecurity: true,
+    api: {
+      find: false,
+      count: false
+    },
     indexes: [
       {key: {'login.email':1}, name:'logins', unique:true, sparse:false},
       {key: {guid:1}, name:'guid', unique:true, sparse:true},
@@ -23,6 +27,11 @@ exports = module.exports = function(Models) {
         this.__data.password = require('../lib/utils').hashPassword(this.password);
       },
       beforeSave: function *() {
+        //Check to see if someone is crazy enough to try to modify a system account
+        if (this._id.equals(Models.anonymousUser._id) || this._id.equals(Models.systemUser._id)) {
+          throw new Models.errors.SystemAccountError();
+        }
+
         //Hash that password
         if (this.hasChanged('password') && this.password) {
           this.password = require('../lib/utils').hashPassword(this.password);
@@ -142,7 +151,11 @@ exports = module.exports = function(Models) {
       },
       deviceTokens: {
         type: Models.structures.DeviceToken,
-        array: true
+        array: true,
+        secure: {
+          read: ['System', 'Admin', 'Owner'],
+          update: ['System', 'Admin', 'Owner']
+        }
       },
       OAuth: {
         type: Models.structures.OAuth,
@@ -154,6 +167,7 @@ exports = module.exports = function(Models) {
       }
     },
     secure: {
+      read: ['System', 'Admin', 'User', 'Owner'],
       create: ['System', 'Admin'],
       update: ['System', 'Admin', 'Owner'],
       remove: ['System', 'Admin']
