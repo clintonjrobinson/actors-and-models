@@ -28,7 +28,7 @@ exports = module.exports = function(Models) {
       },
       beforeSave: function *() {
         //Check to see if someone is crazy enough to try to modify a system account
-        if (this._id.equals(Models.anonymousUser._id) || this._id.equals(Models.systemUser._id)) {
+        if (this._id && (this._id.equals(Models.anonymousUser._id) || this._id.equals(Models.systemUser._id))) {
           throw new Models.errors.SystemAccountError();
         }
 
