@@ -84,7 +84,6 @@ exports = module.exports = function(Models) {
           ArrayMinLength: 1
         },
         secure: {
-          read: ['System', 'Admin', 'Owner'],
           update: ['System', 'Admin', 'Owner']
         }
       },
@@ -109,7 +108,6 @@ exports = module.exports = function(Models) {
       status: {
         type: String,
         secure: {
-          read: ['System', 'Admin', 'Owner'],
           update: ['System', 'Admin']
         }
       },
@@ -137,9 +135,8 @@ exports = module.exports = function(Models) {
         }
       },
       settings: {
-        type: Object,
+        type: Models.Structure,
         secure: {
-          read: ['System', 'Admin', 'Owner'],
           update: ['System', 'Admin', 'Owner']
         }
       },
@@ -153,7 +150,6 @@ exports = module.exports = function(Models) {
         type: Models.structures.DeviceToken,
         array: true,
         secure: {
-          read: ['System', 'Admin', 'Owner'],
           update: ['System', 'Admin', 'Owner']
         }
       },
@@ -161,7 +157,6 @@ exports = module.exports = function(Models) {
         type: Models.structures.OAuth,
         array: true,
         secure: {
-          read: ['System', 'Owner'],
           update: ['System']
         }
       }
