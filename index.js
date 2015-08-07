@@ -4,6 +4,9 @@ var path = require('path');
 var cluster = require('cluster');
 var numCPUs = require('os').cpus().length;
 var Mongo = require('promises-of-mongo');
+var fs = require('fs');
+var http = require('http');
+var https = require('https');
 
 if (!Object.assign) {
   Object.assign = require('object-assign');
@@ -24,7 +27,9 @@ function Models(config) {
     // Fork workers.
     console.log(`${Models.config.name} - master thread NODE_ENV:${Models.constants.NODE_ENV} APP_ENV:${Models.constants.APP_ENV}`);
     for (var i = 0; i < numCPUs; i++) {
-      cluster.fork();
+      setTimeout(function() {
+        cluster.fork();
+      }, i*2000);
     }
 
     cluster.on('exit',
@@ -33,7 +38,6 @@ function Models(config) {
         cluster.fork();
       }
     );
-    return Models;
   }
 
   Models.utils = require('./lib/utils');
@@ -89,7 +93,23 @@ Models.listen = function() {
    * Only fork in the production environemnt.
    */
   if (!(cluster.isMaster && Models.config.cluster)) {
-    Models.app.listen(Models.config.port);
+    if (Models.config.ssl) {
+      var options = {
+        key: fs.readFileSync(Models.config.ssl.key),
+        cert: fs.readFileSync(Models.config.ssl.cert)
+      };
+
+      if (Models.config.ssl.ca) {
+        options.ca = [fs.readFileSync(Models.config.ssl.ca)];
+      }
+
+      https.createServer(options, Models.app.callback()).listen(Models.config.ssl.port);
+
+      console.log(`${Models.config.name}-${process.pid} listening with SSL on ${Models.config.domain}:${Models.config.ssl.port} NODE_ENV:${Models.constants.NODE_ENV} APP_ENV:${Models.constants.APP_ENV}`);
+    }
+    // start the server
+
+    http.createServer(Models.app.callback()).listen(Models.config.port);
     console.log(`${Models.config.name}-${process.pid} listening on ${Models.config.domain}:${Models.config.port} NODE_ENV:${Models.constants.NODE_ENV} APP_ENV:${Models.constants.APP_ENV}`);
   }
 };

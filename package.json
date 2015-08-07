@@ -34,6 +34,7 @@
     "koa-better-body": "^1.0.17",
     "koa-compress": "^1.0.8",
     "koa-error": "git://github.com/clintonjrobinson/error.git",
+    "koa-force-ssl": "0.0.5",
     "koa-logger": "^1.2.2",
     "koa-ratelimit": "^2.1.0",
     "koa-response-time": "^1.0.2",
