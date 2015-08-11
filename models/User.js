@@ -69,7 +69,7 @@ exports = module.exports = function(Models) {
         type: Models.structures.Group,
         array: true,
         validators: {
-          ArrayMaxLength: 24
+          ArrayMaxLength: 128
         },
         secure: {
           update: ['System']
