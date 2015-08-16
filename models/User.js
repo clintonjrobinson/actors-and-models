@@ -17,6 +17,7 @@ exports = module.exports = function(Models) {
     indexes: [
       {key: {'login.email':1}, name:'logins', unique:true, sparse:false},
       {key: {guid:1}, name:'guid', unique:true, sparse:true},
+      {key: {unsubscribe:1}, name:'unsubscribe', unique:true, sparse:true},
       {key: {'groups.group':1}, name:'groups', unique:false, sparse:true},
       {key: {'OAuth.id':1, 'OAuth.type': 1}, name:'ouath', unique:true, sparse:true},
       {key: {'deviceTokens.token':1}, name:'deviceToken', unique:true, sparse:true}
@@ -25,6 +26,9 @@ exports = module.exports = function(Models) {
       beforeCreate: function *() {
         //Set the password without triggering the change.
         this.__data.password = require('../lib/utils').hashPassword(this.password);
+
+        //Create a unique unsubscribe guid for this user.  This will be used in the future to unsubscribe them from emails.
+        this.unsubscribe = Models.utils.guid(24);
       },
       beforeSave: function *() {
         //Check to see if someone is crazy enough to try to modify a system account
@@ -96,6 +100,13 @@ exports = module.exports = function(Models) {
         secure: {
           read: ['System'],
           update: ['System', 'Admin', 'Owner']
+        }
+      },
+      unsubscribe: {
+        type: String,
+        secure: {
+          read: ['System'],
+          update: ['System']
         }
       },
       guid: {
