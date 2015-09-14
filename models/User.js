@@ -42,9 +42,11 @@ exports = module.exports = function(Models) {
         }
 
         //Make sure all emails are lower case!
+        //DEFECT: https://trello.com/c/EYkfUJGV/418-general-email-addressses-with-a-whitespace-can-cause-a-user-not-to-be-able-to-login-or-reset-password
+        // Also make sure all emails are trimmed.
         if (this.login) {
           for (var i=0; i<this.login.length; i++) {
-            this.login[i].email = this.login[i].email.toLowerCase();
+            this.login[i].email = this.login[i].email.toLowerCase().trim();
           }
         }
       },
