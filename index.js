@@ -100,7 +100,8 @@ Models.listen = function() {
       };
 
       if (Models.config.ssl.ca) {
-        options.ca = [fs.readFileSync(Models.config.ssl.ca)];
+        if (!Array.isArray(Models.config.ssl.ca)) Models.config.ssl.ca = [Models.config.ssl.ca];
+        options.ca = Models.config.ssl.ca.map(function(file){return fs.readFileSync(file)});
       }
 
       https.createServer(options, Models.app.callback()).listen(Models.config.ssl.port);
