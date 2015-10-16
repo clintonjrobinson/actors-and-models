@@ -7,25 +7,21 @@ var Mongo = require('promises-of-mongo');
 var fs = require('fs');
 var http = require('http');
 var https = require('https');
+var merge = require('merge-deep');
 
-if (!Object.assign) {
-  Object.assign = require('object-assign');
-}
-
-function Models(config) {
+function Models(config, routes) {
   Models.constants = require('./lib/constants');
 
   //Load the config file from the project directory
   Models.config = config['global'] || {};
-
-  Object.assign(Models.config, config['env:' + Models.constants.APP_ENV] || {});
+  Models.config = merge(Models.config, config['env:' + Models.constants.APP_ENV] || {});
 
   //Set the root path.  This will come in handy later for lots of functions.
   Models.config.root = config.root || __dirname;
 
   if (cluster.isMaster && Models.config.cluster) {
     // Fork workers.
-    console.log(`${Models.config.name} - master thread NODE_ENV:${Models.constants.NODE_ENV} APP_ENV:${Models.constants.APP_ENV}`);
+    console.log(`${Models.constants.APP_ENV} - master thread NODE_ENV:${Models.constants.NODE_ENV} APP_ENV:${Models.constants.APP_ENV}`);
     for (var i = 0; i < numCPUs; i++) {
       setTimeout(function() {
         cluster.fork();
@@ -68,7 +64,7 @@ function Models(config) {
 
   //Create the koa app
   Models.api = {};
-  Models.app = require('./lib/app')(Models);
+  Models.app = require('./lib/app')(Models, routes);
 
   //Setup Client side JS
   Models.clientJS = require('./lib/client')(Models);
@@ -93,10 +89,13 @@ Models.listen = function() {
    * Only fork in the production environemnt.
    */
   if (!(cluster.isMaster && Models.config.cluster)) {
+    console.log(Models.config);
+    console.log(Models.config.ssl);
     if (Models.config.ssl) {
       var options = {
         key: fs.readFileSync(Models.config.ssl.key),
-        cert: fs.readFileSync(Models.config.ssl.cert)
+        cert: fs.readFileSync(Models.config.ssl.cert),
+        passphrase: Models.config.ssl.passphrase
       };
 
       if (Models.config.ssl.ca) {
@@ -106,12 +105,12 @@ Models.listen = function() {
 
       https.createServer(options, Models.app.callback()).listen(Models.config.ssl.port);
 
-      console.log(`${Models.config.name}-${process.pid} listening with SSL on ${Models.config.domain}:${Models.config.ssl.port} NODE_ENV:${Models.constants.NODE_ENV} APP_ENV:${Models.constants.APP_ENV}`);
+      console.log(`${Models.constants.APP_ENV}-${process.pid} listening with SSL on ${Models.config.domain}:${Models.config.ssl.port} NODE_ENV:${Models.constants.NODE_ENV} APP_ENV:${Models.constants.APP_ENV}`);
     }
     // start the server
 
     http.createServer(Models.app.callback()).listen(Models.config.port);
-    console.log(`${Models.config.name}-${process.pid} listening on ${Models.config.domain}:${Models.config.port} NODE_ENV:${Models.constants.NODE_ENV} APP_ENV:${Models.constants.APP_ENV}`);
+    console.log(`${Models.constants.APP_ENV}-${process.pid} listening on ${Models.config.domain}:${Models.config.port} NODE_ENV:${Models.constants.NODE_ENV} APP_ENV:${Models.constants.APP_ENV}`);
   }
 };
 

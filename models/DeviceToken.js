@@ -10,6 +10,9 @@ exports = module.exports = function(Models) {
           Required: true
         }
       },
+      flavour: {
+        type: String
+      },
       token: {
         type: String,
         validators: {

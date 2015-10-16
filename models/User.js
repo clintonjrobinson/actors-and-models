@@ -18,9 +18,9 @@ exports = module.exports = function(Models) {
       {key: {'login.email':1}, name:'logins', unique:true, sparse:false},
       {key: {guid:1}, name:'guid', unique:true, sparse:true},
       {key: {unsubscribe:1}, name:'unsubscribe', unique:true, sparse:true},
-      {key: {'groups.group':1}, name:'groups', unique:false, sparse:true},
+      {key: {'groups.group':1, 'group.roles':1}, name:'groups', unique:false, sparse:true},
       {key: {'OAuth.id':1, 'OAuth.type': 1}, name:'ouath', unique:true, sparse:true},
-      {key: {'deviceTokens.token':1}, name:'deviceToken', unique:true, sparse:true}
+      {key: {'deviceTokens.token':1, 'deviceTokens.type':1, 'deviceTokens.flavour':1}, name:'deviceToken', unique:true, sparse:true}
     ],
     middleware: {
       beforeCreate: function *() {
@@ -135,6 +135,9 @@ exports = module.exports = function(Models) {
         secure: {
           update: ['System']
         }
+      },
+      flavour: {
+        type: String
       },
       roles: {
         type: String,
