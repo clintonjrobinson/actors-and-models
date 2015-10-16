@@ -89,8 +89,6 @@ Models.listen = function() {
    * Only fork in the production environemnt.
    */
   if (!(cluster.isMaster && Models.config.cluster)) {
-    console.log(Models.config);
-    console.log(Models.config.ssl);
     if (Models.config.ssl) {
       var options = {
         key: fs.readFileSync(Models.config.ssl.key),
