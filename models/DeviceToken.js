@@ -4,12 +4,6 @@ exports = module.exports = function(Models) {
   Models.structure({
     name: 'DeviceToken',
     properties: {
-      device: {
-        type: String,
-        validators: {
-          Required: true
-        }
-      },
       flavour: {
         type: String
       },
