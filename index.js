@@ -8,9 +8,11 @@ var fs = require('fs');
 var http = require('http');
 var https = require('https');
 var merge = require('merge-deep');
+var events = require('events');
 
 function Models(config, routes) {
   Models.constants = require('./lib/constants');
+  Models.emitter = new events.EventEmitter();
 
   //Load the config file from the project directory
   Models.config = config['global'] || {};
@@ -19,7 +21,7 @@ function Models(config, routes) {
   //Set the root path.  This will come in handy later for lots of functions.
   Models.config.root = config.root || __dirname;
 
-  if (cluster.isMaster && Models.config.cluster) {
+  if (!config.noServer && cluster.isMaster && Models.config.cluster) {
     // Fork workers.
     console.log(`${Models.constants.APP_ENV} - master thread NODE_ENV:${Models.constants.NODE_ENV} APP_ENV:${Models.constants.APP_ENV}`);
     for (var i = 0; i < numCPUs; i++) {
@@ -59,17 +61,6 @@ function Models(config, routes) {
   //Create the User model, it is the only one we will define cuz its important.
   require('./models/User')(Models);
 
-  ///Koa routes
-  Models.auth = require('./lib/auth')(Models);
-
-  //Create the koa app
-  Models.api = {};
-  Models.app = require('./lib/app')(Models, routes);
-
-  //Setup Client side JS
-  Models.clientJS = require('./lib/client')(Models);
-
-  require('./lib/api')(Models);
 
   Models.connections = {};
   for (let connection in Models.config.mongos) {
@@ -78,7 +69,21 @@ function Models(config, routes) {
 
   Models.mongo = Models.connections.default;
 
-  //Ensure that all the required users have been created.
+  if (!config.noServer) {
+    //Create the koa app
+    Models.api = {};
+    Models.app = require('./lib/app')(Models, routes);
+
+    ///Koa routes
+    Models.auth = require('./lib/auth')(Models);
+    require('./lib/api')(Models);
+
+    //Setup Client side JS
+    Models.clientJS = require('./lib/client')(Models);
+
+    //Ensure that all the required users have been created.
+  }
+
   require('./lib/requiredUsers')(Models);
 
   return Models;

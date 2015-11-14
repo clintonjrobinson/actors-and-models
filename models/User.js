@@ -1,6 +1,7 @@
 "use strict";
 
 exports = module.exports = function(Models) {
+  require('./GeoJSON')(Models);
   require('./DeviceToken')(Models);
   require('./Group')(Models);
   require('./OAuth')(Models);
@@ -20,7 +21,8 @@ exports = module.exports = function(Models) {
       {key: {unsubscribe:1}, name:'unsubscribe', unique:true, sparse:true},
       {key: {'groups.group':1, 'group.roles':1}, name:'groups', unique:false, sparse:true},
       {key: {'OAuth.id':1, 'OAuth.type': 1}, name:'ouath', unique:true, sparse:true},
-      {key: {'deviceTokens.token':1, '_id':1}, name:'deviceToken', unique:true, sparse:true}
+      {key: {'deviceTokens.token':1, '_id':1}, name:'deviceToken', unique:true, sparse:true},
+      {key: {"lastGeo": "2dsphere"}, name: 'geotag', unique: false}
     ],
     middleware: {
       beforeCreate: function *() {
@@ -132,6 +134,24 @@ exports = module.exports = function(Models) {
       },
       lastLogin: {
         type: Date,
+        secure: {
+          update: ['System']
+        }
+      },
+      lastSeen: {
+        type: Date,
+        secure: {
+          update: ['System']
+        }
+      },
+      lastTimeZone: {
+        type: String,
+        secure: {
+          update: ['System']
+        }
+      },
+      lastGeo: {
+        type: Models.structures.GeoJSON,
         secure: {
           update: ['System']
         }

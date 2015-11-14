@@ -2,22 +2,21 @@
 
 exports = module.exports = function(Models) {
   Models.structure({
-    name: 'DeviceToken',
-    properties: {
-      flavour: {
-        type: String
-      },
-      token: {
-        type: String,
-        validators: {
-          Required: true
-        }
-      },
+    name: 'GeoJSON',
+    properties : {
       type: {
         type: String,
         validators: {
           Required: true,
-          In: Models.constants.PUSH_SERVICES
+          In: Models.constants.GEOJSON_TYPES
+        }
+      },
+      coordinates: {
+        type: Number,
+        array: true,
+        validators: {
+          Required: true,
+          ArrayMinLength: 2
         }
       }
     }
