@@ -36,6 +36,8 @@ function Models(config, routes) {
         cluster.fork();
       }
     );
+
+    return Models;
   }
 
   Models.utils = require('./lib/utils');
@@ -90,9 +92,6 @@ function Models(config, routes) {
 }
 
 Models.listen = function() {
-  /**
-   * Only fork in the production environemnt.
-   */
   if (!(cluster.isMaster && Models.config.cluster)) {
     if (Models.config.ssl) {
       var options = {
