@@ -19,6 +19,7 @@ exports = module.exports = function(Models) {
       {key: {'login.email':1}, name:'logins', unique:true, sparse:false},
       {key: {guid:1}, name:'guid', unique:true, sparse:true},
       {key: {guid2:1}, name:'guid2', unique:true, sparse:true},
+      {key: {guid3:1}, name:'guid3', unique:true, sparse:true},
       {key: {unsubscribe:1}, name:'unsubscribe', unique:true, sparse:true},
       {key: {'groups.group':1, 'group.roles':1}, name:'groups', unique:false, sparse:true},
       {key: {'OAuth.id':1, 'OAuth.type': 1}, name:'ouath', unique:true, sparse:true},
@@ -122,6 +123,13 @@ exports = module.exports = function(Models) {
         }
       },
       guid2: {
+        type: String,
+        secure: {
+          read: ['System'],
+          update: ['System']
+        }
+      },
+      guid3: {
         type: String,
         secure: {
           read: ['System'],
