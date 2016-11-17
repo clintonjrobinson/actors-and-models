@@ -7,10 +7,10 @@ exports = module.exports = function(Models) {
     name: 'Group',
     description: 'User Group.',
     properties: {
-      _created: {
+      created: {
         type: Date
       },
-      _updated: {
+      updated: {
         type: Date
       },
       group: {
