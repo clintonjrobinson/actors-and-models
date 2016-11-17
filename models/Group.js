@@ -7,6 +7,12 @@ exports = module.exports = function(Models) {
     name: 'Group',
     description: 'User Group.',
     properties: {
+      _created: {
+        type: Date
+      },
+      _updated: {
+        type: Date
+      },
       group: {
         type: ObjectID,
         validators: {

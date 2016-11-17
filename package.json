@@ -1,6 +1,6 @@
 {
   "name": "actors-and-models",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "An ES6, yieldable ORM with integrated multi-role user security model.  Made with Koa in mind.",
   "main": "index.js",
   "scripts": {
