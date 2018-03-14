@@ -47,6 +47,8 @@
     "merge-deep": "^3.0.0",
     "mime": "^1.3.6",
     "mongodb": "^2.2.28",
+    "pcr": "git+https://github.com/clintonjrobinson/pcr.git",
+    "promises-of-mongo": "git+https://github.com/clintonjrobinson/promises-of-mongo.git",
     "redis": "^2.7.1",
     "thunkify": "^2.1.2",
     "uglify-js": "^3.0.15",

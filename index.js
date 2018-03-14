@@ -80,9 +80,6 @@ function Models(config, routes) {
     Models.auth = require('./lib/auth')(Models);
     require('./lib/api')(Models);
 
-    //Setup Client side JS
-    Models.clientJS = require('./lib/client')(Models);
-
     //Ensure that all the required users have been created.
   }
 
