@@ -65,6 +65,7 @@ function Models(config, routes) {
 
 
   Models.connections = {};
+
   for (let connection in Models.config.mongos) {
     Models.connections[connection] = new Mongo(Models.config.mongos[connection]);
   }
