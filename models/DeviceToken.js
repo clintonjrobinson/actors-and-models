@@ -1,9 +1,15 @@
-"use strict";
+'use strict';
 
 exports = module.exports = function(Models) {
   Models.structure({
     name: 'DeviceToken',
     properties: {
+      created: {
+        type: Date
+      },
+      updated: {
+        type: Date
+      },
       flavour: {
         type: String
       },
