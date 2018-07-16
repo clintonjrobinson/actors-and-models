@@ -81,9 +81,9 @@ function Models(config, routes) {
     Models.auth = require('./lib/auth')(Models);
     require('./lib/api')(Models);
 
-    //Ensure that all the required users have been created.
   }
 
+  //Ensure that all the required users have been created.
   require('./lib/requiredUsers')(Models);
 
   return Models;
