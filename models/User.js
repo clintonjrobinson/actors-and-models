@@ -52,7 +52,7 @@ exports = module.exports = function(Models) {
       { key: { lastGeo: "2dsphere" }, name: "geotag", unique: false }
     ],
     middleware: {
-      beforeCreate: function*() {
+      beforeCreate: async function() {
         //Set the password without triggering the change.
         this.__data.password = require("../lib/utils").hashPassword(
           this.password
@@ -61,7 +61,7 @@ exports = module.exports = function(Models) {
         //Create a unique unsubscribe guid for this user.  This will be used in the future to unsubscribe them from emails.
         this.unsubscribe = Models.utils.guid(24);
       },
-      beforeSave: function*() {
+      beforeSave: async function() {
         //Check to see if someone is crazy enough to try to modify a system account
         if (
           this._id &&
@@ -85,7 +85,7 @@ exports = module.exports = function(Models) {
           }
         }
       },
-      afterCreate: function*() {
+      afterCreate: async function() {
         var User = this.constructor;
         //A user is its own owner. Mindbomb.
         //A user is its own Admin of its own group.
