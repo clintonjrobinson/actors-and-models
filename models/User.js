@@ -174,7 +174,14 @@ exports = module.exports = function(Models) {
           update: ["System"]
         }
       },
-      status: {
+      stripeId: {
+          type: String,
+          secure: {
+              read: ["System"],
+              update: ["System"]
+          }
+      },
+       status: {
         type: String,
         secure: {
           update: ["System", "Admin"]
