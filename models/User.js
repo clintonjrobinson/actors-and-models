@@ -46,7 +46,7 @@ exports = module.exports = function(Models) {
       {
         key: { "deviceTokens.token": 1, _id: 1 },
         name: "deviceToken",
-        unique: true,
+        unique: false,
         sparse: true
       },
       { key: { lastGeo: "2dsphere" }, name: "geotag", unique: false }
